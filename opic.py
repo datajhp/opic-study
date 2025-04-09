@@ -3,6 +3,7 @@ from streamlit_webrtc import webrtc_streamer, AudioProcessorBase, WebRtcMode
 import av
 import numpy as np
 import queue
+import uuid
 
 st.title("🎙️ Streamlit WebRTC 진단용 녹음기")
 
@@ -22,10 +23,11 @@ class AudioProcessor(AudioProcessorBase):
         st.session_state.recv_called = True
         return frame
 
+unique_key = str(uuid.uuid4())[:8]
 # WebRTC 연결
 st.header("🔌 마이크 연결 상태 확인")
 webrtc_ctx = webrtc_streamer(
-    key="debug-mic",
+    key=f"mic-{unique_key}",
     mode=WebRtcMode.SENDONLY,
     audio_receiver_size=256,
     media_stream_constraints={"audio": True, "video": False},
