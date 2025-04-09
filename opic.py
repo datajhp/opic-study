@@ -83,6 +83,15 @@ with tabs[1]:
         audio_processor_factory=AudioProcessor,
         async_processing=True,
     )
+    if webrtc_ctx:
+    st.write("WebRTC 상태:", webrtc_ctx.state)
+    if webrtc_ctx.state.playing:
+        st.success("✅ 스트리밍 시작됨 (recv() 가능)")
+    elif webrtc_ctx.state.connected:
+        st.warning("🟡 연결은 되었지만 아직 스트리밍 중이 아님 (준비 중)")
+    else:
+        st.error("🔴 아직 연결 안 됨 (마이크 권한 허용했는지 확인)")
+
 
     if st.button("🎬 녹음 종료 후 분석"):
         if not audio_queue.empty():
@@ -110,3 +119,5 @@ with tabs[1]:
             st.success(corrected)
         else:
             st.warning("녹음된 음성이 없습니다.")
+
+
