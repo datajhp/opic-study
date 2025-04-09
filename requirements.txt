@@ -1,10 +1,8 @@
 streamlit
 streamlit-webrtc
-openai-whisper
 transformers
-torchaudio
+openai-whisper
+ffmpeg-python
 numpy
-av
-pyaudio
 sounddevice
-ffmpeg CLI  # ffmpeg CLI 대체 가능 (서버에서 ffmpeg 설치 안될 경우)
+av
