@@ -8,7 +8,7 @@ from streamlit_webrtc import webrtc_streamer, AudioProcessorBase, WebRtcMode
 import av
 import queue
 
-# 모델 로딩 (캐시 처리)
+# 모델 로딩
 @st.cache_resource
 def load_whisper():
     return whisper.load_model("base")
@@ -19,18 +19,30 @@ def load_grammar_model():
     model = AutoModelForSeq2SeqLM.from_pretrained("prithivida/grammar_error_correcter_v1")
     return tokenizer, model
 
-# 문법 피드백 함수
+# 문법 피드백
 def grammar_correction(text):
     tokenizer, model = load_grammar_model()
     inputs = tokenizer.encode("gec: " + text, return_tensors="pt", truncation=True, max_length=512)
     outputs = model.generate(inputs, max_length=512, num_beams=4)
     return tokenizer.decode(outputs[0], skip_special_tokens=True)
 
-st.title("🎤 오픽 영어 말하기 연습 (파일 업로드 + 마이크 지원)")
+st.title("🎤 오픽 영어 말하기 연습 앱")
 
-tabs = st.tabs(["📁 파일 업로드", "🎙 마이크 녹음"])
+tabs = st.tabs(["📁 파일 업로드", "🎙 마이크 녹음", "✍️ 텍스트 직접 입력"])
 
-# 음성 파일 업로드 방식
+# 1. 텍스트 입력 탭
+with tabs[2]:
+    user_input = st.text_area("오픽 응답을 영어로 직접 입력하세요:", height=150)
+    if st.button("✅ 문법 피드백 받기"):
+        if user_input.strip() == "":
+            st.warning("문장을 입력해주세요.")
+        else:
+            st.info("문법 교정 중입니다...")
+            corrected = grammar_correction(user_input)
+            st.subheader("✅ 교정된 문장")
+            st.success(corrected)
+
+# 2. 음성 파일 업로드
 with tabs[0]:
     uploaded = st.file_uploader("오픽 응답 음성 파일 업로드 (.wav / .mp3)", type=["wav", "mp3"])
     if uploaded:
@@ -50,15 +62,12 @@ with tabs[0]:
         st.markdown("**✅ 교정된 문장:**")
         st.success(corrected)
 
-# 마이크 녹음 방식
+# 3. 마이크 녹음 탭
 with tabs[1]:
     st.info("🎤 브라우저에서 마이크 권한을 허용해주세요!")
     audio_queue = queue.Queue()
 
     class AudioProcessor(AudioProcessorBase):
-        def __init__(self):
-            self.recorded_frames = []
-
         def recv(self, frame: av.AudioFrame) -> av.AudioFrame:
             pcm = frame.to_ndarray().flatten().astype(np.float32)
             audio_queue.put(pcm)
@@ -73,7 +82,7 @@ with tabs[1]:
         async_processing=True,
     )
 
-    if st.button("✅ 녹음 종료하고 분석하기"):
+    if st.button("🎬 녹음 종료 후 분석"):
         if not audio_queue.empty():
             st.info("🔄 음성 분석 중입니다...")
 
@@ -81,7 +90,7 @@ with tabs[1]:
             while not audio_queue.empty():
                 all_audio.extend(audio_queue.get())
             audio_tensor = torch.tensor(all_audio)
-            sample_rate = 48000  # 기본 스트리밍 샘플링
+            sample_rate = 48000
 
             with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
                 tmp_audio_path = f.name
@@ -98,4 +107,4 @@ with tabs[1]:
             st.markdown("**✅ 교정된 문장:**")
             st.success(corrected)
         else:
-            st.warning("녹음된 음성이 없습니다. 마이크 권한과 상태를 확인해주세요.")
+            st.warning("녹음된 음성이 없습니다.")
