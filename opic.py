@@ -64,39 +64,37 @@ with tabs[0]:
 
 # 3. 마이크 녹음 탭
 with tabs[1]:
-    st.info("🎤 브라우저에서 마이크 권한을 허용해주세요!")
-    audio_queue = queue.Queue()
-    st.write("🎧 녹음된 프레임 수:", len(audio_queue.queue))
+    st.title("🎙 오픽 말하기 녹음 연습")
 
-
-    class AudioProcessor(AudioProcessorBase):
-        def recv(self, frame: av.AudioFrame) -> av.AudioFrame:
-            pcm = frame.to_ndarray().flatten().astype(np.float32)
-            audio_queue.put(pcm)
-            return frame
+# 1단계: 녹음 시작
+if not st.session_state.recording:
+    if st.button("🎤 녹음 시작"):
+        st.session_state.recording = True
+        st.experimental_rerun()
+else:
+    st.success("🔴 녹음 중입니다! 말하고 나서 아래 버튼을 눌러주세요.")
 
     webrtc_ctx = webrtc_streamer(
-        key="mic",
+        key="mic-recorder",
         mode=WebRtcMode.SENDONLY,
         audio_receiver_size=256,
         media_stream_constraints={"audio": True, "video": False},
         audio_processor_factory=AudioProcessor,
         async_processing=True,
     )
-    if webrtc_ctx:
-    st.write("WebRTC 상태:", webrtc_ctx.state)
-    if webrtc_ctx.state.playing:
-        st.success("✅ 스트리밍 시작됨 (recv() 가능)")
-    elif webrtc_ctx.state.connected:
-        st.warning("🟡 연결은 되었지만 아직 스트리밍 중이 아님 (준비 중)")
+
+    if webrtc_ctx and webrtc_ctx.state.playing:
+        st.info("🎧 마이크가 연결되었습니다. 말해보세요!")
+    elif webrtc_ctx and not webrtc_ctx.state.playing:
+        st.warning("⏳ 마이크 연결 대기 중입니다...")
     else:
-        st.error("🔴 아직 연결 안 됨 (마이크 권한 허용했는지 확인)")
+        st.warning("🛑 마이크 초기화 중입니다...")
 
+    # 2단계: 녹음 종료 + 분석
+    if st.button("✅ 녹음 종료 및 분석"):
+        st.session_state.recording = False
 
-    if st.button("🎬 녹음 종료 후 분석"):
         if not audio_queue.empty():
-            st.info("🔄 음성 분석 중입니다...")
-
             all_audio = []
             while not audio_queue.empty():
                 all_audio.extend(audio_queue.get())
@@ -111,13 +109,13 @@ with tabs[1]:
             whisper_model = load_whisper()
             result = whisper_model.transcribe(tmp_audio_path)
             user_text = result["text"]
-            st.markdown("**🎧 전사 결과:**")
+            st.subheader("📝 전사된 텍스트")
             st.write(user_text)
 
             corrected = grammar_correction(user_text)
-            st.markdown("**✅ 교정된 문장:**")
+            st.subheader("✅ 교정된 문장")
             st.success(corrected)
         else:
-            st.warning("녹음된 음성이 없습니다.")
+            st.error("🎙 녹음된 음성이 없습니다. 마이크 권한 또는 연결 상태를 확인해주세요.")
 
 
