@@ -34,7 +34,7 @@ webrtc_ctx = webrtc_streamer(
 )
 
 # 연결 상태 출력
-if webrtc_ctx is not None:
+if webrtc_ctx and webrtc_ctx.state:
     st.write("🎯 WebRTC 상태:", webrtc_ctx.state)
     if webrtc_ctx.state.playing:
         st.success("✅ playing = True (마이크 스트림 수신 중)")
@@ -43,7 +43,7 @@ if webrtc_ctx is not None:
     else:
         st.error("❌ WebRTC 연결 실패")
 else:
-    st.warning("🔁 webrtc_ctx is None (아직 초기화되지 않음)")
+    st.warning("⏳ WebRTC 연결 초기화 중입니다...")
 
 # recv() 호출 여부
 st.header("📡 프레임 수신 상태")
