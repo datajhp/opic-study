@@ -66,6 +66,8 @@ with tabs[0]:
 with tabs[1]:
     st.info("🎤 브라우저에서 마이크 권한을 허용해주세요!")
     audio_queue = queue.Queue()
+    st.write("🎧 녹음된 프레임 수:", len(audio_queue.queue))
+
 
     class AudioProcessor(AudioProcessorBase):
         def recv(self, frame: av.AudioFrame) -> av.AudioFrame:
