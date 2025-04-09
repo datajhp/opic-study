@@ -15,20 +15,20 @@ def load_whisper():
 
 @st.cache_resource
 def load_grammar_model():
-    tokenizer = AutoTokenizer.from_pretrained("prithivida/grammar_error_correcter_v1")
-    model = AutoModelForSeq2SeqLM.from_pretrained("prithivida/grammar_error_correcter_v1")
+    tokenizer = AutoTokenizer.from_pretrained("vennify/t5-base-grammar-correction")
+    model = AutoModelForSeq2SeqLM.from_pretrained("vennify/t5-base-grammar-correction")
     return tokenizer, model
 
-# 문법 피드백
+# 문법 피드백 함수
 def grammar_correction(text):
     tokenizer, model = load_grammar_model()
-    inputs = tokenizer.encode("gec: " + text, return_tensors="pt", truncation=True, max_length=512)
+    inputs = tokenizer.encode(text, return_tensors="pt", truncation=True, max_length=512)
     outputs = model.generate(inputs, max_length=512, num_beams=4)
     return tokenizer.decode(outputs[0], skip_special_tokens=True)
 
 st.title("🎤 오픽 영어 말하기 연습 앱")
 
-tabs = st.tabs(["📁 파일 업로드", "🎙 마이크 녹음", "✍️ 텍스트 직접 입력"])
+tabs = st.tabs(["📁 파일 업로드", "🎙 마이크 녹음", "✍️ 텍스트 입력"])
 
 # 1. 텍스트 입력 탭
 with tabs[2]:
@@ -42,7 +42,7 @@ with tabs[2]:
             st.subheader("✅ 교정된 문장")
             st.success(corrected)
 
-# 2. 음성 파일 업로드
+# 2. 음성 파일 업로드 탭
 with tabs[0]:
     uploaded = st.file_uploader("오픽 응답 음성 파일 업로드 (.wav / .mp3)", type=["wav", "mp3"])
     if uploaded:
