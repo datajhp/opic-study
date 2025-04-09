@@ -40,12 +40,14 @@ def grammar_correction(text):
 
 st.title("🎙 오픽 말하기 녹음 연습")
 
+if "recording" not in st.session_state:
+    st.session_state.recording = False
 # 1단계: 녹음 시작
 if not st.session_state.recording:
     if st.button("🎤 녹음 시작"):
         st.session_state.recording = True
-        st.experimental_rerun()
-else:
+        # ❌ st.experimental_rerun() 제거
+if st.session_state.recording:
     st.success("🔴 녹음 중입니다! 말하고 나서 아래 버튼을 눌러주세요.")
 
     webrtc_ctx = webrtc_streamer(
