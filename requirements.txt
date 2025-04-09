@@ -1,8 +1,10 @@
 streamlit
 streamlit-webrtc
-transformers
 openai-whisper
+transformers
+huggingface-hub
 ffmpeg-python
 numpy
 sounddevice
 av
+torchaudio
