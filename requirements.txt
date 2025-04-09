@@ -7,4 +7,4 @@ numpy
 av
 pyaudio
 sounddevice
-ffmpeg-python  # ffmpeg CLI 대체 가능 (서버에서 ffmpeg 설치 안될 경우)
+ffmpeg CLI  # ffmpeg CLI 대체 가능 (서버에서 ffmpeg 설치 안될 경우)
